@@ -1,19 +1,44 @@
 package org.etamburini.junitapp.example.domains;
 
 import org.etamburini.junitapp.example.exceptions.InsufficientMoneyException;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountTest {
+
+    private Account account;
+    @BeforeEach
+    void initMethodTest() {
+        System.out.println("Init Method");
+        this.account = new Account("Testing", new BigDecimal("1000.12345"));
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.out.println("Ending Method");
+    }
+
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("Init tests");
+    }
+
+    @AfterAll
+    static void afterAll() {
+        System.out.println("Ending tests");
+    }
+
     @Test
     @DisplayName("Testing name account")
     void testAccountName() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         //account.setPerson("Testing");
 
         final String waitedValue = "Testing";
@@ -26,7 +51,6 @@ class AccountTest {
     @Test
     @DisplayName("Testing amount account")
     void testAmountAccount() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         assertNotNull(account.getAmount());
         assertEquals(1000.12345, account.getAmount().doubleValue());
         assertFalse(account.getAmount().compareTo(BigDecimal.ZERO) < 0);
@@ -36,7 +60,6 @@ class AccountTest {
     @Test
     @DisplayName("Testing equal operator overwrite")
     void testRefAccount() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         final Account account2 = new Account("Testing", new BigDecimal("1000.12345"));
 
         assertEquals(account, account2);
@@ -44,7 +67,6 @@ class AccountTest {
 
     @Test
     void testDebit() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         account.debit(new BigDecimal(100));
 
         assertNotNull(account.getAmount());
@@ -55,7 +77,6 @@ class AccountTest {
 
     @Test
     void testCredit() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         account.credit(new BigDecimal(100));
 
         assertNotNull(account.getAmount());
@@ -65,7 +86,6 @@ class AccountTest {
 
     @Test
     void testInsufficientMoneyAccountException() {
-        final Account account = new Account("Testing", new BigDecimal("1000.12345"));
         final Exception exception = assertThrows(InsufficientMoneyException.class, () -> account.debit(new BigDecimal("1500")));
 
         final String currentMessage = exception.getMessage();
@@ -137,5 +157,118 @@ class AccountTest {
     @Disabled
     void testFailed() {
         fail();
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    void testOnlyLinux() {}
+
+    @Test
+    @EnabledOnOs({OS.WINDOWS, OS.MAC})
+    void testOnlyWindowsAndMac() {}
+
+    @Test
+    @DisabledOnOs(OS.LINUX)
+    void testDisableOnLinux() {
+    }
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_8)
+    void testOnlyJdk8() {
+    }
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_21)
+    void testOnlyJdk21() {
+    }
+
+    @Test
+    @DisabledOnJre(JRE.JAVA_21)
+    void testDisableJdk21() {
+    }
+
+    @Test
+    void testPrintSystemProperties() {
+        final Properties properties = System.getProperties();
+        properties.forEach((key, value) -> {
+            System.out.println(key + " : " + value);
+        });
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "java.version", matches = "21.0.1")
+    void testJdkVersion() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "java.version", matches = ".*")
+    void testJdkRegularExpressionVersion() {
+    }
+
+    @Test
+    @DisabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+    void testOnly64() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+    void testNo64() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "user.name", matches = "emmanuel")
+    void testUsername() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "ENV", matches = "dev")
+    void testDev() {
+    }
+
+    @Test
+    void testPrintEnvironmentVar() {
+        final Map<String, String> getenv = System.getenv();
+        getenv.forEach((key, value) -> System.out.println(key + " : " + value));
+    }
+
+    @Test
+    @EnabledIfEnvironmentVariable(named = "GNOME_SHELL_SESSION_MODE", matches = "ubuntu")
+    void testGnomeShellSessionMode() {
+    }
+
+    @Test
+    @EnabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "dev")
+    void testEnv() {
+    }
+
+    @Test
+    @DisabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "prod")
+    void testProd() {
+    }
+
+    @Test
+    @DisplayName("Testing amount account with Assumptions")
+    void testAmountAccountDev() {
+        final boolean isDev = "dev".equals(System.getProperty("ENV"));
+
+        assumeTrue(isDev);
+
+        assertNotNull(account.getAmount());
+        assertEquals(1000.12345, account.getAmount().doubleValue());
+        assertFalse(account.getAmount().compareTo(BigDecimal.ZERO) < 0);
+        assertTrue(account.getAmount().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    @DisplayName("Testing amount account with Assumptions 2")
+    void testAmountAccountDev2() {
+        final boolean isDev = "de".equals(System.getProperty("ENV"));
+
+        assumingThat(isDev, () -> {
+            assertNotNull(account.getAmount());
+            assertEquals(1000.12345, account.getAmount().doubleValue());
+            assertFalse(account.getAmount().compareTo(BigDecimal.ZERO) < 0);
+            assertTrue(account.getAmount().compareTo(BigDecimal.ZERO) > 0);
+        });
     }
 }

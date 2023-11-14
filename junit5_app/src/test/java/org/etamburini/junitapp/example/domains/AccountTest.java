@@ -66,9 +66,7 @@ class AccountTest {
     @Test
     void testInsufficientMoneyAccountException() {
         final Account account = new Account("Testing", new BigDecimal("1000.12345"));
-        final Exception exception = assertThrows(InsufficientMoneyException.class, () -> {
-            account.debit(new BigDecimal("1500"));
-        });
+        final Exception exception = assertThrows(InsufficientMoneyException.class, () -> account.debit(new BigDecimal("1500")));
 
         final String currentMessage = exception.getMessage();
         final String waitedMessage = "Insufficient Money";
@@ -117,7 +115,7 @@ class AccountTest {
                     assertEquals("Testing 1", bank.getAccounts().stream()
                             .filter(currentAccount -> currentAccount.getPerson().equals("Testing 1"))
                             .findFirst()
-                            .get()
+                            .orElse(null)
                             .getPerson()
                     );
                 },
@@ -128,7 +126,7 @@ class AccountTest {
                     assertEquals("Testing 2", bank.getAccounts().stream()
                             .filter(currentAccount -> currentAccount.getPerson().equals("Testing 2"))
                             .findFirst()
-                            .get()
+                            .orElse(null)
                             .getPerson()
                     );
                 }

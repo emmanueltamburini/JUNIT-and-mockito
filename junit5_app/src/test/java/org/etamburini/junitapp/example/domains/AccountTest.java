@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS) If this is activated, the attributes of the class will be the same for every test
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS) NOTE: If this is activated, the attributes of the class will be the same for every test
 class AccountTest {
     private Account account;
     private TestInfo testInfo;

@@ -10,10 +10,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
@@ -425,6 +427,31 @@ class AccountTest {
 
             assertEquals(account.getPerson(), waitedName);
             assertTrue(account.getAmount().compareTo(BigDecimal.ZERO) >= 0);
+        }
+    }
+
+    @Nested
+    @Tag("Timeout")
+    class TimeoutTests {
+        @Test
+        @Timeout(2)
+        @DisplayName("Testing with timeout")
+        void testTimeout() throws InterruptedException {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
+        @Test
+        @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
+        @DisplayName("Testing with timeout two parameters")
+        void testTimeoutTwoParameters() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(450);
+        }
+
+        @Test
+        void testTimeoutAssertions() {
+            assertTimeout(Duration.ofSeconds(2), () -> {
+                TimeUnit.SECONDS.sleep(1);
+            });
         }
     }
 

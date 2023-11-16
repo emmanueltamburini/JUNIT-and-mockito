@@ -18,14 +18,20 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS) If this is activated, the attributes of the class will be the same for every test
 class AccountTest {
-
     private Account account;
+    private TestInfo testInfo;
+    private TestReporter testReporter;
+
     @BeforeEach
-    void initMethodTest() {
+    void initMethodTest(final TestInfo testInfo, final TestReporter testReporter) {
         System.out.println("Init Method");
         this.account = new Account("Testing", new BigDecimal("1000.12345"));
+        testReporter.publishEntry("Running: " + testInfo.getDisplayName() + " - " + testInfo.getTestMethod().orElse(null).getName()
+                + " with tags " + testInfo.getTags());
+        this.testInfo = testInfo;
+        this.testReporter = testReporter;
     }
 
     @AfterEach
@@ -45,11 +51,15 @@ class AccountTest {
 
     @Nested
     @DisplayName("Account functionality test")
-    class AccountFunctionalityTest {
+    @Tag("Account")
+    @Tag("Test1")
+    class AccountFunctionalityTests {
         @Test
         @DisplayName("Testing name account")
-        void testAccountName() {
-            //account.setPerson("Testing");
+        void testAccountName(final TestInfo testInfo, final TestReporter testReporter) {
+            if (testInfo.getTags().contains("Account")) {
+                testReporter.publishEntry("Account tag is included");
+            }
 
             final String waitedValue = "Testing";
             final String currentValue = account.getPerson();
@@ -77,7 +87,8 @@ class AccountTest {
     }
 
     @Nested
-    class OperationAccount {
+    @Tag("Account")
+    class OperationAccountsTests {
         @Test
         void testDebit() {
             account.debit(new BigDecimal(100));
@@ -110,7 +121,8 @@ class AccountTest {
     }
 
     @Nested
-    class ExceptionTest {
+    @Tag("Account")
+    class ExceptionTests {
         @Test
         void testInsufficientMoneyAccountException() {
             final Exception exception = assertThrows(InsufficientMoneyException.class, () -> account.debit(new BigDecimal("1500")));
@@ -123,7 +135,8 @@ class AccountTest {
     }
 
     @Nested
-    class RelationTest {
+    @Tag("Account")
+    class RelationTests {
         @Test
         @DisplayName("Testing bank and account relations with assertAll")
         void testRelationAccountBank() {
@@ -173,8 +186,9 @@ class AccountTest {
     }
 
     @Nested
-    class OtherTest {
+    class OtherTests {
         @Test
+        @Tag("Test1")
         @Disabled
         void testFailed() {
             fail();
@@ -182,7 +196,7 @@ class AccountTest {
     }
 
     @Nested
-    class OperatingSystem {
+    class OperatingSystemTests {
         @Test
         @EnabledOnOs(OS.LINUX)
         void testOnlyLinux() {}
@@ -198,7 +212,7 @@ class AccountTest {
     }
 
     @Nested
-    class JavaVersionTest {
+    class JavaVersionTests {
         @Test
         @EnabledOnJre(JRE.JAVA_8)
         void testOnlyJdk8() {
@@ -216,7 +230,7 @@ class AccountTest {
     }
 
     @Nested
-    class SystemPropertiesTest {
+    class SystemPropertiesTests {
         @Test
         void testPrintSystemProperties() {
             final Properties properties = System.getProperties();
@@ -226,6 +240,7 @@ class AccountTest {
         }
 
         @Test
+        @Tag("Test1")
         @EnabledIfSystemProperty(named = "java.version", matches = "21.0.1")
         void testJdkVersion() {
         }
@@ -257,7 +272,7 @@ class AccountTest {
     }
 
     @Nested
-    class EnvironmentVariables {
+    class EnvironmentVariablesTests {
         @Test
         void testPrintEnvironmentVar() {
             final Map<String, String> getenv = System.getenv();
@@ -281,7 +296,7 @@ class AccountTest {
     }
 
     @Nested
-    class AssumptionsTest {
+    class AssumptionsTests {
         @Test
         @DisplayName("Testing amount account with Assumptions")
         void testAmountAccountDev() {
@@ -310,6 +325,7 @@ class AccountTest {
     }
 
     @Nested
+    @Tag("LoopsTests")
     class LoopsTests {
         static List<String> amountList () {
             return Arrays.asList("100", "200", "300", "500", "1000");

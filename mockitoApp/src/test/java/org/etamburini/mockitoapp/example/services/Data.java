@@ -19,4 +19,6 @@ public class Data {
         "Question 4",
         "Question 5"
     );
+
+    public final static Exam EXAM = new Exam(8L, "Physical mock");
 }

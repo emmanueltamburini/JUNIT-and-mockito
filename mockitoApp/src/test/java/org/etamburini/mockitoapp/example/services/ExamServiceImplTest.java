@@ -4,13 +4,13 @@ import org.etamburini.mockitoapp.example.models.Exam;
 import org.etamburini.mockitoapp.example.repositories.ExamRepository;
 import org.etamburini.mockitoapp.example.repositories.ExamRepositoryImpl;
 import org.etamburini.mockitoapp.example.repositories.QuestionRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import static org.mockito.Mockito.*;
 
@@ -89,5 +89,60 @@ class ExamServiceImplTest {
 
         assertNull(exam);
         verify(repository).findAll();
+    }
+
+    @Test
+    void testSaveExam() {
+        when(repository.save(Data.EXAM)).thenReturn(Data.EXAM);
+
+        final Exam exam = service.save(Data.EXAM);
+
+        assertNotNull(exam.getId());
+        assertEquals(8L, exam.getId());
+        assertEquals("Physical mock", exam.getName());
+
+        verify(repository).save(Data.EXAM);
+    }
+
+    @Test
+    void testSaveExamWithQuestions() {
+        final Exam examWithQuestions = Data.EXAM;
+        examWithQuestions.setQuestions(Data.QUESTIONS);
+
+        when(repository.save(any(Exam.class))).thenReturn(examWithQuestions);
+
+        final Exam exam = service.save(Data.EXAM);
+
+        assertNotNull(exam.getId());
+        assertEquals(8L, exam.getId());
+        assertEquals("Physical mock", exam.getName());
+
+        verify(repository).save(any(Exam.class));
+        verify(questionRepository).saveQuestions(anyList());
+    }
+
+    @Test
+    void testSaveExamWithIncrementalID() {
+        final Exam currentExam = new Exam(8L, "Physical mock"); //It is because if I use Data.EXAM, the id will increment and other tests could be failed
+        //Given
+        when(repository.save(currentExam)).then(new Answer<Exam>(){
+            private Long currentId = 9L;
+            @Override
+            public Exam answer(InvocationOnMock invocation) throws Throwable {
+                final Exam exam = invocation.getArgument(0);
+                exam.setId(currentId++);
+                return exam;
+            }
+        });
+
+        //When
+        final Exam exam = service.save(currentExam);
+
+        //Then
+        assertNotNull(exam.getId());
+        assertEquals(9L, exam.getId());
+        assertEquals("Physical mock", exam.getName());
+
+        verify(repository).save(currentExam);
     }
 }

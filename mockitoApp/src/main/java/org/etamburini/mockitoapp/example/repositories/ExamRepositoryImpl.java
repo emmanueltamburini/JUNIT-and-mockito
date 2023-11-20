@@ -21,4 +21,9 @@ public class ExamRepositoryImpl implements ExamRepository {
                 new Exam(3L, "History mock")
         );
     }
+
+    @Override
+    public Exam save(Exam exam) {
+        return exam;
+    }
 }

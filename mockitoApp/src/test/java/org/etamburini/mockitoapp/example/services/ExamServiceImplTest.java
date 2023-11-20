@@ -6,23 +6,26 @@ import org.etamburini.mockitoapp.example.repositories.ExamRepositoryImpl;
 import org.etamburini.mockitoapp.example.repositories.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import static org.mockito.Mockito.*;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
+    @Mock
     private ExamRepository repository;
+    @Mock
     private QuestionRepository questionRepository;
-    private ExamService service;
-
-    @BeforeEach
-    void setUp() {
-        this.repository = mock(ExamRepositoryImpl.class);
-        this.questionRepository = mock(QuestionRepository.class);
-        this.service = new ExamServiceImpl(repository, questionRepository);
-    }
+    @InjectMocks
+    private ExamServiceImpl service;
 
     @Test
     void getTestByName() {
@@ -81,7 +84,6 @@ class ExamServiceImplTest {
     @Test
     void testNotExitsExamVerify() {
         when(repository.findAll()).thenReturn(Data.EXAMS);
-        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
 
         final Exam exam = service.findExamWithQuestionsByName("Math mock 1");
 

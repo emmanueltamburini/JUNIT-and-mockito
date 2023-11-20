@@ -128,7 +128,7 @@ class ExamServiceImplTest {
         when(repository.save(currentExam)).then(new Answer<Exam>(){
             private Long currentId = 9L;
             @Override
-            public Exam answer(InvocationOnMock invocation) throws Throwable {
+            public Exam answer(InvocationOnMock invocation) {
                 final Exam exam = invocation.getArgument(0);
                 exam.setId(currentId++);
                 return exam;
@@ -144,5 +144,35 @@ class ExamServiceImplTest {
         assertEquals("Physical mock", exam.getName());
 
         verify(repository).save(currentExam);
+    }
+
+    @Test
+    void testHandleException() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenThrow(IllegalArgumentException.class);
+
+         final Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+             service.findExamWithQuestionsByName("Math mock");
+         });
+
+         assertEquals(IllegalArgumentException.class, exception.getClass());
+
+         verify(repository).findAll();
+         verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testHandleExceptionWithNull() {
+        when(repository.findAll()).thenReturn(Data.EXAMS_NULL_ID);
+        when(questionRepository.findQuestionsByExamId(isNull())).thenThrow(IllegalArgumentException.class);
+
+        final Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.findExamWithQuestionsByName("Math mock");
+        });
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(isNull());
     }
 }

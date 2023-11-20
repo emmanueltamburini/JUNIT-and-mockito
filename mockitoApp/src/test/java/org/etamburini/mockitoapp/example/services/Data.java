@@ -12,6 +12,12 @@ public class Data {
             new Exam(3L, "History mock")
     );
 
+    public final static List<Exam> EXAMS_NULL_ID = Arrays.asList(
+            new Exam(null, "Math mock"),
+            new Exam(null, "Languages mock"),
+            new Exam(null, "History mock")
+    );
+
     public final static List<String> QUESTIONS = Arrays.asList(
         "Question 1",
         "Question 2",

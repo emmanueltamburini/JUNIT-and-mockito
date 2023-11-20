@@ -3,12 +3,12 @@ package org.etamburini.mockitoapp.example.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SchoolTest {
+public class Exam {
     private Long id;
     private String name;
     private List<String> questions;
 
-    public SchoolTest(Long id, String name) {
+    public Exam(Long id, String name) {
         this.id = id;
         this.name = name;
         this.questions = new ArrayList<>();

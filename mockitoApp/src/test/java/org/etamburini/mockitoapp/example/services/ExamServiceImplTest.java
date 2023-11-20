@@ -57,11 +57,35 @@ class ExamServiceImplTest {
     @Test
     void testQuestionsExam() {
         when(repository.findAll()).thenReturn(Data.EXAMS);
-        when(questionRepository.findQuestionsByExamId(5L)).thenReturn(Data.QUESTIONS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
 
         final Exam exam = service.findExamWithQuestionsByName("Math mock");
 
         assertEquals(5, exam.getQuestions().size());
         assertTrue(exam.getQuestions().contains("Question 1"));
+    }
+
+    @Test
+    void testQuestionsExamVerify() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+
+        final Exam exam = service.findExamWithQuestionsByName("Math mock");
+
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Question 1"));
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testNotExitsExamVerify() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+
+        final Exam exam = service.findExamWithQuestionsByName("Math mock 1");
+
+        assertNull(exam);
+        verify(repository).findAll();
     }
 }

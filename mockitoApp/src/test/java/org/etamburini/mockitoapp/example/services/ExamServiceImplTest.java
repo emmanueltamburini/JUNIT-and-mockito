@@ -252,4 +252,47 @@ class ExamServiceImplTest {
            service.save(exam);
         });
     }
+
+    @Test
+    void testDoAnswer() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        doAnswer(invocation -> {
+           final Long id = invocation.getArgument(0);
+           return id == 5L ? Data.QUESTIONS : null;
+        }).when(questionRepository).findQuestionsByExamId(anyLong());
+
+        final Exam exam = service.findExamWithQuestionsByName("Math mock");
+
+        assertEquals(5L, exam.getId() );
+        assertEquals("Math mock", exam.getName());
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Question 1"));
+
+         verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testSaveExamWithIncrementalIDAndDoAnwser() {
+        final Exam currentExam = new Exam(8L, "Physical mock"); //It is because if I use Data.EXAM, the id will increment and other tests could be failed
+        //Given
+        doAnswer(new Answer<Exam>(){
+            private Long currentId = 9L;
+            @Override
+            public Exam answer(InvocationOnMock invocation) {
+                final Exam exam = invocation.getArgument(0);
+                exam.setId(currentId++);
+                return exam;
+            }
+        }).when(repository).save(any(Exam.class));
+
+        //When
+        final Exam exam = service.save(currentExam);
+
+        //Then
+        assertNotNull(exam.getId());
+        assertEquals(9L, exam.getId());
+        assertEquals("Physical mock", exam.getName());
+
+        verify(repository).save(any(Exam.class));
+    }
 }

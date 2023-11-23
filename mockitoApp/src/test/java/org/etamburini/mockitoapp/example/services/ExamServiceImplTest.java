@@ -241,4 +241,15 @@ class ExamServiceImplTest {
 
         assertEquals(5L, captor.getValue());
     }
+
+    @Test
+    void testDoThrow() {
+        final Exam exam = Data.EXAM;
+        exam.setQuestions(Data.QUESTIONS);
+        doThrow(IllegalArgumentException.class).when(questionRepository).saveQuestions(anyList());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+           service.save(exam);
+        });
+    }
 }

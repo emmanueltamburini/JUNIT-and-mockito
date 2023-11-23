@@ -6,6 +6,7 @@ import org.etamburini.mockitoapp.example.repositories.ExamRepositoryImpl;
 import org.etamburini.mockitoapp.example.repositories.QuestionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -174,5 +175,45 @@ class ExamServiceImplTest {
 
         verify(repository).findAll();
         verify(questionRepository).findQuestionsByExamId(isNull());
+    }
+
+    @Test
+    void testArgumentMatchers() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+
+        service.findExamWithQuestionsByName("Math mock");
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(argThat(arg -> arg != null && arg.equals(5L)));
+        verify(questionRepository).findQuestionsByExamId(argThat(arg -> arg != null && arg > 0L));
+        verify(questionRepository).findQuestionsByExamId(eq(5L));
+    }
+
+    @Test
+    void testArgumentMatchers2() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+
+        service.findExamWithQuestionsByName("Math mock");
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(argThat(new ArgMatchersCustom()));
+    }
+
+    public static class ArgMatchersCustom implements ArgumentMatcher<Long> {
+        private Long argument;
+
+        @Override
+        public boolean matches(final Long argument) {
+            this.argument = argument;
+            return argument != null && argument > 0;
+        }
+
+        @Override
+        public String toString() {
+            return "ArgMatchersCustom custom message: + " +
+                    argument +" must be not null and bigger than 0";
+        }
     }
 }

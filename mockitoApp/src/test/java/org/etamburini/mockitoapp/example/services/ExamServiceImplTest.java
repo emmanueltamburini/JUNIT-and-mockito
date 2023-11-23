@@ -6,9 +6,7 @@ import org.etamburini.mockitoapp.example.repositories.ExamRepositoryImpl;
 import org.etamburini.mockitoapp.example.repositories.QuestionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -27,6 +25,9 @@ class ExamServiceImplTest {
     private QuestionRepository questionRepository;
     @InjectMocks
     private ExamServiceImpl service;
+
+    @Captor
+    private ArgumentCaptor<Long> captor;
 
     @Test
     void getTestByName() {
@@ -215,5 +216,29 @@ class ExamServiceImplTest {
             return "ArgMatchersCustom custom message: + " +
                     argument +" must be not null and bigger than 0";
         }
+    }
+
+    @Test
+    void testArgumentCaptor() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+
+        service.findExamWithQuestionsByName("Math mock");
+
+        final ArgumentCaptor<Long> currentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(questionRepository).findQuestionsByExamId(currentCaptor.capture());
+
+        assertEquals(5L, currentCaptor.getValue());
+    }
+
+    @Test
+    void testArgumentCaptorWithAnnotation() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+
+        service.findExamWithQuestionsByName("Math mock");
+
+        final ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        verify(questionRepository).findQuestionsByExamId(captor.capture());
+
+        assertEquals(5L, captor.getValue());
     }
 }

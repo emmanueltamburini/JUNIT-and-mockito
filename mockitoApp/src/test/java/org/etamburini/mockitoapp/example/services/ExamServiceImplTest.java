@@ -337,8 +337,8 @@ class ExamServiceImplTest {
     void testOrderToRun() {
         when(repository.findAll()).thenReturn(Data.EXAMS);
 
-        service.findExamWithQuestionsByName("Math");
-        service.findExamWithQuestionsByName("Languages");
+        service.findExamWithQuestionsByName("Math mock");
+        service.findExamWithQuestionsByName("Languages mock");
 
         final InOrder inOrder = inOrder(questionRepository);
         inOrder.verify(questionRepository).findQuestionsByExamId(5L);
@@ -349,13 +349,52 @@ class ExamServiceImplTest {
     void testOrderToRun2() {
         when(repository.findAll()).thenReturn(Data.EXAMS);
 
-        service.findExamWithQuestionsByName("Math");
-        service.findExamWithQuestionsByName("Languages");
+        service.findExamWithQuestionsByName("Math mock");
+        service.findExamWithQuestionsByName("Languages mock");
 
         final InOrder inOrder = inOrder(repository, questionRepository);
         inOrder.verify(repository).findAll();
         inOrder.verify(questionRepository).findQuestionsByExamId(5L);
         inOrder.verify(repository).findAll();
         inOrder.verify(questionRepository).findQuestionsByExamId(2L);
+    }
+
+    @Test
+    void testNumberOfTimesToRun() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        service.findExamWithQuestionsByName("Math mock");
+
+        verify(questionRepository).findQuestionsByExamId(5L);
+        verify(questionRepository, times(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atLeast(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atLeastOnce()).findQuestionsByExamId(5L);
+        verify(questionRepository, atMost(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atMostOnce()).findQuestionsByExamId(5L);
+    }
+
+    @Test
+    void testNumberOfTimesToRun2() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        service.findExamWithQuestionsByName("Languages mock");
+        service.findExamWithQuestionsByName("Languages mock");
+
+        verify(questionRepository, times(2)).findQuestionsByExamId(2L);
+        verify(questionRepository, atLeast(2)).findQuestionsByExamId(2L);
+        verify(questionRepository, atMost(20)).findQuestionsByExamId(2L);
+    }
+
+    @Test
+    void testNumberOfTimesToRun3() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        service.findExamWithQuestionsByName("Math mock");
+
+        verify(questionRepository, never()).findQuestionsByExamId(anyLong());
+        verifyNoInteractions(questionRepository);
+        verify(repository).findAll();
+        verify(repository, times(1)).findAll();
+        verify(repository, atLeast(1)).findAll();
+        verify(repository, atLeastOnce()).findAll();
+        verify(repository, atMost(1)).findAll();
+        verify(repository, atMostOnce()).findAll();
     }
 }

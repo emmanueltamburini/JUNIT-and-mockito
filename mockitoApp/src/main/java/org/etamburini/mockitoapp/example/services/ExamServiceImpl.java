@@ -28,7 +28,7 @@ public class ExamServiceImpl implements ExamService {
         final Optional<Exam> examOptional = getExamByName(name);
         Exam exam = null;
         if (examOptional.isPresent()) {
-            exam = examOptional.orElseThrow();
+           exam = examOptional.orElseThrow();
            final List<String> questions = questionRepository.findQuestionsByExamId(exam.getId());
            exam.setQuestions(questions);
         }

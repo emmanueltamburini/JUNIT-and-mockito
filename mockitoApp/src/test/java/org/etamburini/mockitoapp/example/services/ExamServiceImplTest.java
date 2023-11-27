@@ -1,9 +1,11 @@
 package org.etamburini.mockitoapp.example.services;
 
+import org.etamburini.mockitoapp.example.Data;
 import org.etamburini.mockitoapp.example.models.Exam;
 import org.etamburini.mockitoapp.example.repositories.ExamRepository;
 import org.etamburini.mockitoapp.example.repositories.ExamRepositoryImpl;
 import org.etamburini.mockitoapp.example.repositories.QuestionRepository;
+import org.etamburini.mockitoapp.example.repositories.QuestionRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -20,12 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
     @Mock
-    private ExamRepository repository;
+    private ExamRepositoryImpl repository;
     @Mock
-    private QuestionRepository questionRepository;
+    private QuestionRepositoryImpl questionRepository;
     @InjectMocks
     private ExamServiceImpl service;
-
     @Captor
     private ArgumentCaptor<Long> captor;
 
@@ -294,5 +295,41 @@ class ExamServiceImplTest {
         assertEquals("Physical mock", exam.getName());
 
         verify(repository).save(any(Exam.class));
+    }
+
+    @Test
+    void testDoCallRealMethod() {
+        when(repository.findAll()).thenReturn(Data.EXAMS);
+        doCallRealMethod().when(questionRepository).findQuestionsByExamId(anyLong());
+
+        final Exam exam = service.findExamWithQuestionsByName("Math mock");
+
+        assertEquals(5L, exam.getId() );
+        assertEquals("Math mock", exam.getName());
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Real Question 1"));
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(argThat(new ArgMatchersCustom()));
+    }
+
+
+    @Test
+    void testSpy() {
+        final ExamRepository examRepository = spy(ExamRepositoryImpl.class);
+        final QuestionRepository questionRepository = spy(QuestionRepositoryImpl.class);
+        final ExamService examService = new ExamServiceImpl(examRepository, questionRepository);
+
+        // when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS); //NOTE: if I use the method when in a spy, the real function will be called here
+        doReturn(Data.QUESTIONS).when(questionRepository).findQuestionsByExamId(anyLong());
+
+        final Exam exam = examService.findExamWithQuestionsByName("Math");
+
+        assertEquals(5L, exam.getId());
+        assertEquals("Math", exam.getName());
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Question 1"));
+
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionsByExamId(anyLong());
     }
 }

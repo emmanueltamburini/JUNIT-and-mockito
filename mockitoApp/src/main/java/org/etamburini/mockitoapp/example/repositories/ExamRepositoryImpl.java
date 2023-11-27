@@ -1,5 +1,6 @@
 package org.etamburini.mockitoapp.example.repositories;
 
+import org.etamburini.mockitoapp.example.Data;
 import org.etamburini.mockitoapp.example.models.Exam;
 
 import java.util.Arrays;
@@ -15,15 +16,11 @@ public class ExamRepositoryImpl implements ExamRepository {
             throw new RuntimeException(e);
         }
 
-        return Arrays.asList(
-                new Exam(5L, "Math mock"),
-                new Exam(2L, "Languages mock"),
-                new Exam(3L, "History mock")
-        );
+        return Data.REAL_EXAMS;
     }
 
     @Override
     public Exam save(Exam exam) {
-        return exam;
+        return Data.REAL_EXAM;
     }
 }
